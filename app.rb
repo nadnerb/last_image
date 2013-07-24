@@ -18,6 +18,6 @@ post '/submit' do
 end
 
 get '/images' do
-  @images = Image.all
+  @image = Image.find Random.rand(1..Image.count)
   erb :images
 end
