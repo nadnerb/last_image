@@ -1,0 +1,6 @@
+development:
+  adapter: postgresql
+  database: last_image_dev
+  username: <%= ENV['DB_USER'] %>
+  password: <%= ENV['DB_PASSWORD'] %>
+  host: localhost
