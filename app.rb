@@ -1,23 +1,18 @@
 require 'rubygems'
 require 'sinatra'
-require 'sinatra/activerecord'
-require './config/environments'
-require './models/image'
+require 'dalli'
+
+set :images, Dalli::Client.new(nil, :namespace => "images")
 
 get '/' do
   erb :index
 end
 
 post '/submit' do
-  @model = Image.new(params[:image])
-  if @model.save
-    redirect '/images'
-  else
-    "Sorry, there was an error!"
-  end
+  settings.images.set(params['image']['name'], params['image']['url'])
 end
 
 get '/images' do
-  @image = Image.find Random.rand(1..Image.count)
+  @image = settings.images.get('bob')
   erb :images
 end
