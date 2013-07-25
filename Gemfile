@@ -4,6 +4,7 @@ gem 'rake'
 gem 'dotenv'
 gem 'sinatra'
 gem 'dalli'
+gem 'unicorn'
 
 group :development do
 
