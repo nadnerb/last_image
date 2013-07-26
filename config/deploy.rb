@@ -15,7 +15,7 @@ set :use_sudo, false
 set :default_shell, "bash -l"
 set :ruby_version, "1.9.3"
 set :chruby_config, "/etc/profile.d/chruby.sh"
-set :set_ruby_cmd, "source #{chruby_config} && chruby #{ruby_version}"
+set :set_ruby_cmd, "source #{chruby_config} && source /etc/profile.d/lastmeme.sh && chruby #{ruby_version}"
 set(:bundle_cmd) {
   "#{set_ruby_cmd} && exec bundle"
 }
