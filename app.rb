@@ -2,17 +2,12 @@ require 'rubygems'
 require 'sinatra'
 require 'dalli'
 
-set :images, Dalli::Client.new(nil, :namespace => "images")
+set :cache, Dalli::Client.new
+
+set :images, ['http://i.qkme.me/3pk0sc.jpg', 'http://t.qkme.me/3v8twz.jpg', 'http://t.qkme.me/3ops.jpg']
 
 get '/' do
+  @image = settings.images.sample
   erb :index
 end
 
-post '/submit' do
-  settings.images.set(params['image']['name'], params['image']['url'])
-end
-
-get '/images' do
-  @image = settings.images.get('bob')
-  erb :images
-end

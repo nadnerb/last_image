@@ -39,11 +39,11 @@ ssh_options[:keys] = ENV['DEPLOY_KEY']
 namespace :deploy do
 
   task :restart do
-    run "if [ -f #{unicorn_pid} ]; then kill -USR2 `cat #{unicorn_pid}`; else cd #{current_path} && bundle exec unicorn -c #{unicorn_conf} -E #{rack_env} -D; fi"
+    run "if [ -f #{unicorn_pid} ]; then kill -USR2 `cat #{unicorn_pid}`; else cd #{current_path} && #{set_ruby_cmd} && bundle exec unicorn -c #{unicorn_conf} -E #{rack_env} -D; fi"
   end
 
   task :start do
-    run "cd #{current_path} && bundle exec unicorn -c #{unicorn_conf} -E #{rack_env} -D"
+    run "cd #{current_path} && #{set_ruby_cmd} && bundle exec unicorn -c #{unicorn_conf} -E #{rack_env} -D"
   end
 
   task :stop do
