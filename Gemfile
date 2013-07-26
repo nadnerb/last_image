@@ -5,10 +5,10 @@ gem 'dotenv'
 gem 'sinatra'
 gem 'dalli'
 gem 'unicorn'
+gem "statsd-ruby"
 
 group :development do
 
   gem 'capistrano'
-
 
 end
