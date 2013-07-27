@@ -3,6 +3,7 @@ require 'sinatra'
 require 'dalli'
 require 'statsd'
 require 'resolv'
+require './lib/active_users'
 
 enable :sessions
 set :session_secret, 'last'
@@ -10,12 +11,11 @@ set :cache, Dalli::Client.new(nil, :expire_in =>180)
 
 set :statsd, Statsd.new(Resolv.getaddress('statsd.lastmeme.com'), 8125)
 set :images, ['http://i.qkme.me/3pk0sc.jpg', 'http://t.qkme.me/3v6soz.jpg', 'http://t.qkme.me/3v8twz.jpg', 'http://t.qkme.me/3ops.jpg']
+set :active_users, ActiveUsers.new(settings.cache)
 
 after do
-  active_users= settings.cache.get('active_users') || {}
-  active_users[session['session_id']] = Time.now
-  settings.cache.set('active_users', active_users)
-  settings.statsd.gauge 'users', active_users.size
+  count= settings.active_users.add(session['session_id'])
+  settings.statsd.gauge 'users', count
 end
 
 get '/' do

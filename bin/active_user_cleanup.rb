@@ -1,17 +1,11 @@
 #!/usr/bin/env ruby
 
 require 'dalli'
+require './lib/active_users'
 
-cache= Dalli::Client.new
+users= ActiveUsers.new(Dalli::Client.new)
 
-active_users = cache.get 'active_users'
-
-exit unless active_users
-
-puts "Number of active users before cleanup: #{active_users.size}"
-
-active_users.delete_if { |key, time| time < Time.now - 180 }
-cache.set('active_users', active_users)
-
-puts "Number of active users after cleanup: #{active_users.size}"
+puts "Number of active users before cleanup: #{users.count}"
+new_count= users.cleanup
+puts "Number of active users after cleanup: #{new_count}"
 
