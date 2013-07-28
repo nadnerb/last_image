@@ -1,8 +1,5 @@
 require 'rubygems'
 require 'sinatra'
-require 'dalli'
-require 'statsd'
-require 'resolv'
 require './lib/user'
 
 enable :sessions

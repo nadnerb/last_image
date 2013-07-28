@@ -9,6 +9,9 @@ class User
       users[sid] = Time.now
       Metrics.gauge 'users', users.size
     end
+    unless Cache.users.get(sid)
+      Cache.users.set(sid, '', nil, :raw => true)
+    end
   end
 
   def self.count
@@ -23,6 +26,7 @@ class User
   end
 
   def viewed
+    Cache.users.get(@sid)
   end
 
   def viewing image

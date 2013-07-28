@@ -1,5 +1,6 @@
-
 require 'statsd'
+require 'resolv'
+
 module Metrics
   extend self
 
