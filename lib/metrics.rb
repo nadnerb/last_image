@@ -4,9 +4,11 @@ module Metrics
   extend self
 
   def increment counter
+    statsd.increment counter
   end
 
   def gauge name, value
+    statsd.gauge name, value
   end
 
   private
