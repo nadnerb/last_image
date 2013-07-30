@@ -8,9 +8,9 @@ GEM
       net-ssh (>= 2.0.14)
       net-ssh-gateway (>= 1.1.0)
     dalli (2.6.2)
-    dotenv (0.8.0)
     highline (1.6.19)
     kgio (2.8.0)
+    minitest (4.7.5)
     net-scp (1.1.2)
       net-ssh (>= 2.6.5)
     net-sftp (2.1.2)
@@ -22,7 +22,6 @@ GEM
     rack-protection (1.5.0)
       rack
     raindrops (0.11.0)
-    rake (10.1.0)
     shotgun (0.9)
       rack (>= 1.0)
     sinatra (1.4.3)
@@ -42,8 +41,7 @@ PLATFORMS
 DEPENDENCIES
   capistrano
   dalli
-  dotenv
-  rake
+  minitest
   shotgun
   sinatra
   statsd-ruby

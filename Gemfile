@@ -1,12 +1,14 @@
 source 'https://rubygems.org'
 
-gem 'rake'
-gem 'dotenv'
 gem 'sinatra'
 gem 'dalli'
 gem 'unicorn'
 gem "statsd-ruby"
 gem 'shotgun'
+
+group :test do
+  gem 'minitest'
+end
 
 group :development do
   gem 'capistrano'
