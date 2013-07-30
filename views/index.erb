@@ -1,3 +1,4 @@
+<%if settings.feature.active?(:voting)%>
 <div class="buttons row">
   <form action="/funny" method="POST">
     <input type="hidden" name="meme[id]" value="<%=@meme.id%>"/>
@@ -8,6 +9,7 @@
     <input type="submit" class="col-6 col-offset-0 btn btn-danger btn-large sad-button" value="Stupid" />
   </form>
 </div>
+<%end%>
 <div class="image row">
   <img src="<%= @meme.url %>"/>
 </div>

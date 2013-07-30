@@ -11,6 +11,7 @@ configure do
   set :public_folder, Proc.new { File.join(root, "static") }
   set :session_secret, 'last'
   set :memes, Memes.new
+  set :feature, Feature.new
   enable :sessions
 end
 
@@ -32,4 +33,14 @@ end
 
 get '/votes' do
   erb :votes
+end
+
+get '/activate_feature' do
+  settings.feature.activate(:voting)
+  redirect '/'
+end
+
+get '/deactivate_feature' do
+  settings.feature.deactivate(:voting)
+  redirect '/'
 end
