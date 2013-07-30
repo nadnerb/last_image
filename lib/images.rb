@@ -1,43 +1,50 @@
-require './lib/image'
+require './lib/meme'
 
 class Images
 
   def initialize
-    @images = {}
+    @memes = {}
     populate
   end
 
   def random
-    @images.values.sample
+    @memes.values.sample
   end
 
   def [] id
-    @images[id]
+    @memes[id]
   end
 
   def each &block
-    @images.values.each &block
+    @memes.values.each &block
   end
 
   private
   def populate
     [
-      {:name => 'dry clean only', :url => 'http://i.qkme.me/3rbofl.jpg'},
-      {:name => 'waldo',          :url => 'http://t.qkme.me/3v8twz.jpg'},
-      {:name => 'shaving',        :url => 'http://t.qkme.me/3ops.jpg'},
-      {:name => 'liar',           :url => 'http://i.qkme.me/3qqutc.jpg'},
-      {:name => 'northface',      :url => 'http://media2.policymic.com/a99dd6b0533046d442ef72c2c55ae755.jpg'},
-      {:name => 'meow',           :url => 'http://media2.policymic.com/af9daec128ff5f479ee6e6031fec40a4.jpg'},
-      {:name => 'horrible',       :url => 'http://media2.policymic.com/842c85f608b4795d6f079a16e9a3c109.jpeg'},
-      {:name => 'stun',           :url => 'https://pbs.twimg.com/media/BPymrAQCIAQ_Pvp.jpg'}
-    ].inject(1) do |id, image|
-      cache(Image.new({:id => id}.merge(image)))
+      {:name => 'continuous',     :url => '/img/continuous.jpg'},
+      {:name => 'dry clean only', :url => '/img/dryclean.jpg'},
+      {:name => 'waldo\'s head',  :url => '/img/waldo.jpg'},
+      {:name => 'bananas',        :url => '/img/bananas.jpg'},
+      {:name => 'liar',           :url => '/img/liar.jpg'},
+      {:name => 'northface',      :url => '/img/northface.jpg'},
+      {:name => 'meow',           :url => '/img/meow.jpg'},
+      {:name => 'horrible',       :url => '/img/horrible.jpg'},
+      {:name => 'stun',           :url => '/img/stun.jpg'},
+      {:name => 'beer cat',       :url => '/img/beercat.jpg'},
+      {:name => 'red dot',        :url => '/img/reddot.jpg'},
+      {:name => 'doctor',         :url => '/img/doctor.jpg'},
+      {:name => 'puppy',          :url => '/img/puppy.jpg'},
+      {:name => 'poop',           :url => '/img/poop.jpg'},
+      {:name => 'mercy',          :url => '/img/mercy.jpg'}
+    ].inject(1) do |id, meme_hash|
+      cache(Meme.new({:id => id}.merge(meme_hash)))
       id += 1
     end
   end
 
-  def cache(image)
-    @images[image.id.to_s] = image
+  def cache(meme)
+    @memes[meme.id.to_s] = meme
   end
 
 end

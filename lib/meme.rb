@@ -1,6 +1,6 @@
 require './lib/vote'
 
-class Image
+class Meme
   attr_reader :id, :name, :url
 
   def initialize args

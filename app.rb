@@ -10,23 +10,23 @@ end
 configure do
   set :public_folder, Proc.new { File.join(root, "static") }
   set :session_secret, 'last'
-  set :images, Images.new
+  set :memes, Images.new
   enable :sessions
 end
 
 get '/' do
-  @image = settings.images.random
-  @user.viewing(@image.url)
+  @meme = settings.memes.random
+  @user.viewing(@meme.url)
   erb :index
 end
 
 post '/funny' do
-  settings.images[params[:image][:id]].funny!
+  settings.memes[params[:meme][:id]].funny!
   redirect '/'
 end
 
 post '/stupid' do
-  settings.images[params[:image][:id]].stupid!
+  settings.memes[params[:meme][:id]].stupid!
   redirect '/'
 end
 

@@ -1,13 +1,13 @@
 <div class="buttons row">
   <form action="/funny" method="POST">
-    <input type="hidden" name="image[id]" value="<%=@image.id%>"/>
+    <input type="hidden" name="meme[id]" value="<%=@meme.id%>"/>
     <input type="submit" class="col-6 col-offset-0 btn btn-success btn-large funny-button" value="Funny" />
   </form>
   <form action="/stupid" method="POST">
-    <input type="hidden" name="image[id]" value="<%=@image.id%>"/>
+    <input type="hidden" name="meme[id]" value="<%=@meme.id%>"/>
     <input type="submit" class="col-6 col-offset-0 btn btn-danger btn-large sad-button" value="Stupid" />
   </form>
 </div>
 <div class="image row">
-  <img src="<%= @image.url %>"/>
+  <img src="<%= @meme.url %>"/>
 </div>
