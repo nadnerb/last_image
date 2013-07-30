@@ -1,7 +1,7 @@
 require 'bundler/capistrano'
 
 set :application, "lastmeme"
-set :repository,  "git@github.com:nadnerb/last_image.git"
+set :repository,  "https://github.com/nadnerb/last_image.git"
 
 set :scm, :git
 
