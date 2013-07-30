@@ -1,0 +1,28 @@
+require './lib/vote'
+
+class Image
+  attr_reader :id, :name, :url
+
+  def initialize args
+    @id   = args[:id]
+    @name = args[:name]
+    @url  = args[:url]
+  end
+
+  def funny!
+    Vote.increment('funny', id)
+  end
+
+  def stupid!
+    Vote.increment('stupid', id)
+  end
+
+  def funny_count
+    Vote.get('funny', id)
+  end
+
+  def stupid_count
+    Vote.get('stupid', id)
+  end
+
+end

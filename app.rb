@@ -1,27 +1,35 @@
 require 'sinatra'
 require './lib/user'
 require './lib/feature'
+require './lib/images'
 
 before do
   @user = User.new(session['session_id'])
 end
 
-set :images, [
-  {:url => 'img/continuous.jpg'},
-  {:url => 'img/liar.jpg'},
-  {:url => 'img/bananas.jpg'},
-  {:url => 'img/waldo.jpg'}
-]
-
 configure do
   set :public_folder, Proc.new { File.join(root, "static") }
-  enable :sessions
   set :session_secret, 'last'
-  set :feature, Feature.new
+  set :images, Images.new
+  enable :sessions
 end
 
 get '/' do
-  @image = settings.images.sample
-  @user.viewing(@image[:url])
+  @image = settings.images.random
+  @user.viewing(@image.url)
   erb :index
+end
+
+post '/funny' do
+  settings.images[params[:image][:id]].funny!
+  redirect '/'
+end
+
+post '/stupid' do
+  settings.images[params[:image][:id]].stupid!
+  redirect '/'
+end
+
+get '/votes' do
+  erb :votes
 end

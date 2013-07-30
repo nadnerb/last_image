@@ -1,0 +1,16 @@
+<table border=1>
+  <tr><td>name</td><td>funny</td><td>stupid</td><tr>
+<% settings.images.each do |image| %>
+  <tr>
+    <td>
+      <%=image.id%>
+    </td>
+    <td>
+      <%=image.funny_count%>
+    </td>
+    <td>
+      <%=image.stupid_count%>
+    </td>
+  </tr>
+<% end %>
+</table>
