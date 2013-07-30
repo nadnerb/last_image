@@ -8,6 +8,9 @@ end
 
 set :images, [
   {:url => 'img/continuous.jpg'},
+  {:url => 'img/liar.jpg'},
+  {:url => 'img/bananas.jpg'},
+  {:url => 'img/waldo.jpg'}
 ]
 
 configure do
@@ -18,7 +21,7 @@ configure do
 end
 
 get '/' do
-  @image = settings.images.first
+  @image = settings.images.sample
   @user.viewing(@image[:url])
   erb :index
 end
