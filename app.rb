@@ -1,11 +1,10 @@
 require 'sinatra'
 require './lib/user'
+require './lib/feature'
 
 before do
   @user = User.new(session['session_id'])
 end
-
-set :cache, Dalli::Client.new("localhost:11211", { :namespace => "lastmeme", :compress => true })
 
 set :images, [
   {:id => 1, :url => 'http://i.qkme.me/3rbofl.jpg'},
@@ -21,6 +20,7 @@ configure do
   set :public_folder, Proc.new { File.join(root, "static") }
   enable :sessions
   set :session_secret, 'last'
+  set :feature, Feature.new
 end
 
 get '/' do
@@ -28,4 +28,3 @@ get '/' do
   @user.viewing(@image[:url])
   erb :index
 end
-
