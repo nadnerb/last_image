@@ -1,6 +1,6 @@
 require './lib/meme'
 
-class Images
+class Memes
 
   def initialize
     @memes = {}

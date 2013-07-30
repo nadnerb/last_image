@@ -1,7 +1,7 @@
 require 'sinatra'
 require './lib/user'
 require './lib/feature'
-require './lib/images'
+require './lib/memes'
 
 before do
   @user = User.new(session['session_id'])
@@ -10,7 +10,7 @@ end
 configure do
   set :public_folder, Proc.new { File.join(root, "static") }
   set :session_secret, 'last'
-  set :memes, Images.new
+  set :memes, Memes.new
   enable :sessions
 end
 
