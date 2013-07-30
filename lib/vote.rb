@@ -9,6 +9,7 @@ module Vote
 
   def increment(type, id)
     votes.incr(key(type, id), 1, nil, 1)
+    Metrics.increment type
   end
 
   private
