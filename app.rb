@@ -18,7 +18,7 @@ configure do
 end
 
 get '/' do
-  @image = settings.images.sample
+  @image = settings.images.first
   @user.viewing(@image[:url])
   erb :index
 end
