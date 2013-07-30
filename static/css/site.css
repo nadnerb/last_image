@@ -1,0 +1,16 @@
+body {
+  padding-top: 50px;
+}
+.navbar-inner {
+  text-align:center;
+}
+.container {
+  max-width: 580px;
+}
+.last-template {
+  padding: 20px 15px;
+  text-align: center;
+}
+.image {
+  padding-top: 20px;
+}
