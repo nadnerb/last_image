@@ -1,4 +1,5 @@
 require './lib/cache'
+require './lib/metrics'
 
 module Vote
   extend self
