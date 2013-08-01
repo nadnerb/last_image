@@ -7,7 +7,7 @@ module Cache
   end
 
   def client name
-    Dalli::Client.new("localhost:11211", { :namespace => name, :compress => true })
+    Dalli::Client.new(nil, :namespace => name)
   end
 
 end
