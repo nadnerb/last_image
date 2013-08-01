@@ -44,7 +44,11 @@ class Memes
       {:name => 'poop',           :url => '/img/poop.jpg'},
       {:name => 'it\'s working',  :url => '/img/working.jpg'},
       {:name => 'mercy',          :url => '/img/mercy.jpg'},
-      {:name => 'interesting',    :url => '/img/interesting.jpg'}
+      {:name => 'interesting',    :url => '/img/interesting.jpg'},
+      {:name => 'badtime',        :url => '/img/badtime.jpg'},
+      {:name => 'notsure',        :url => '/img/notsure.jpg'},
+      {:name => 'success',        :url => '/img/success.jpg'},
+      {:name => 'steve',          :url => '/img/steve.jpg'}
     ].inject(1) do |id, meme_hash|
       cache(Meme.new({:id => id}.merge(meme_hash)))
       id += 1
