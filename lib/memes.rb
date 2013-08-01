@@ -2,21 +2,27 @@ require './lib/meme'
 
 class Memes
 
+  attr_reader :memes
+
   def initialize
     @memes = {}
     populate
   end
 
   def random
-    @memes.values.sample
+    memes.values.sample
   end
 
   def [] id
-    @memes[id]
+    memes[id]
   end
 
   def each &block
-    @memes.values.each &block
+    memes.values.each &block
+  end
+
+  def sort
+    memes.values.sort
   end
 
   private
@@ -37,7 +43,8 @@ class Memes
       {:name => 'puppy',          :url => '/img/puppy.jpg'},
       {:name => 'poop',           :url => '/img/poop.jpg'},
       {:name => 'it\'s working',  :url => '/img/working.jpg'},
-      {:name => 'mercy',          :url => '/img/mercy.jpg'}
+      {:name => 'mercy',          :url => '/img/mercy.jpg'},
+      {:name => 'interesting',    :url => '/img/interesting.jpg'}
     ].inject(1) do |id, meme_hash|
       cache(Meme.new({:id => id}.merge(meme_hash)))
       id += 1
@@ -45,7 +52,7 @@ class Memes
   end
 
   def cache(meme)
-    @memes[meme.id.to_s] = meme
+    memes[meme.id.to_s] = meme
   end
 
 end

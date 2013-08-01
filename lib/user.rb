@@ -3,14 +3,16 @@ require './lib/metrics'
 
 class User
 
-  def initialize sid
-    @sid = sid
+  attr_reader :id
+
+  def initialize id
+    @id = id
     User.active_users do |users|
-      users[sid] = Time.now
+      users[id] = Time.now
       Metrics.gauge 'users', users.size
     end
-    unless Cache.users.get(sid)
-      Cache.users.set(sid, '', nil, :raw => true)
+    unless Cache.users.get(id)
+      Cache.users.set(id, '', nil, :raw => true)
     end
   end
 
@@ -26,13 +28,13 @@ class User
   end
 
   def viewed
-    Cache.users.get(@sid)
+    Cache.users.get(id)
   end
 
   def viewing image
-    Cache.users.append(@sid, image + '||')
+    Cache.users.append(id, image + '||')
     Metrics.increment 'image'
-    Metrics.gauge('views', Cache.users.incr(@sid + '-image', 1, nil, 1))
+    Metrics.gauge('views', Cache.users.incr(id + '-image', 1, nil, 1))
   end
 
   private

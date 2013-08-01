@@ -1,4 +1,15 @@
-<%if settings.feature.active?(:voting)%>
+<%if settings.feature.active?(:icons, @user)%>
+<div class="buttons row">
+  <form action="/funny" method="POST">
+    <input type="hidden" name="meme[id]" value="<%=@meme.id%>"/>
+    <button type="submit" class="col-6 col-offset-0 btn btn-info btn-large funny-button"><i class="icon-thumbs-up"></i></button>
+  </form>
+  <form action="/stupid" method="POST">
+    <input type="hidden" name="meme[id]" value="<%=@meme.id%>"/>
+    <button type="submit" class="col-6 col-offset-0 btn btn-warning btn-large stupid-button"><i class="icon-thumbs-down"></i></button>
+  </form>
+</div>
+<%else%>
 <div class="buttons row">
   <form action="/funny" method="POST">
     <input type="hidden" name="meme[id]" value="<%=@meme.id%>"/>

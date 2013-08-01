@@ -1,9 +1,9 @@
-<table border=1>
-  <tr><td>name</td><td>funny</td><td>stupid</td><tr>
-<% settings.memes.each do |meme| %>
+<table class="table table-bordered table-striped">
+  <tr><td>meme</td><td>funny count</td><td>stupid count</td><tr>
+      <% settings.memes.sort.each do |meme| %>
   <tr>
     <td>
-      <%=meme.id%>
+      <img src="<%= meme.url %>"/>
     </td>
     <td>
       <%=meme.funny_count%>
