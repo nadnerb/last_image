@@ -1,0 +1,16 @@
+<table border=1>
+  <tr><td>name</td><td>funny</td><td>stupid</td><tr>
+<% settings.memes.each do |meme| %>
+  <tr>
+    <td>
+      <%=meme.id%>
+    </td>
+    <td>
+      <%=meme.funny_count%>
+    </td>
+    <td>
+      <%=meme.stupid_count%>
+    </td>
+  </tr>
+<% end %>
+</table>
