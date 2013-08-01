@@ -35,6 +35,11 @@ get '/votes' do
   erb :votes
 end
 
+get '/deactivate_feature' do
+  settings.feature.deactivate(:voting)
+  redirect '/'
+end
+
 get '/activate_percentage' do
   settings.feature.activate_percentage(:icons, 50)
   redirect '/'
