@@ -25,4 +25,12 @@ class Meme
     Vote.get('stupid', id)
   end
 
+  def total
+    funny_count.to_i - stupid_count.to_i
+  end
+
+  def <=>(other)
+    other.total <=> total
+  end
+
 end
