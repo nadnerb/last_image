@@ -1,0 +1,382 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+
+    "Description": "lastmeme.com stack",
+
+    "Parameters": {
+
+        "KeyName": {
+            "Description": "Name of an existing EC2 KeyPair to enable SSH access to the instance",
+            "Type": "String"
+        },
+
+        "InstanceType": {
+            "Description": "AppServer EC2 instance type",
+            "Type": "String",
+            "Default": "m1.small",
+            "AllowedValues": [ "t1.micro", "m1.small", "m1.medium", "m1.large", "m1.xlarge", "m2.xlarge", "m2.2xlarge", "m2.4xlarge", "c1.medium", "c1.xlarge", "cc1.4xlarge", "cc2.8xlarge", "cg1.4xlarge"],
+            "ConstraintDescription": "must be a valid EC2 instance type."
+        },
+
+        "StatsdImageId": {
+            "Description": "Base AMI for Statsd",
+            "Type": "String"
+        },
+
+        "WebImageId": {
+            "Description": "Base AMI for Web",
+            "Type": "String"
+        },
+
+        "AwsAccessKey": {
+            "Description": "Your AWS access key",
+            "Type": "String"
+        },
+
+        "AwsSecretAccessKey": {
+            "Description": "Your AWS secret access key",
+            "Type": "String"
+        },
+
+        "LibratoEmail": {
+            "Default": "sbartlett@dius.com.au",
+            "Description": "Librato email for API access",
+            "Type": "String"
+        },
+
+        "LibratoToken": {
+            "Description": "Librato token for API access",
+            "Type": "String"
+        },
+
+        "CacheNodeType" : {
+          "Default" : "cache.t1.micro",
+          "Description" : "The compute and memory capacity of the nodes in the Cache Cluster",
+          "Type" : "String",
+          "AllowedValues" : [ "cache.t1.micro", "cache.m1.small", "cache.m1.large", "cache.m1.xlarge", "cache.m2.xlarge", "cache.m2.2xlarge", "cache.m2.4xlarge", "cache.c1.xlarge" ],
+          "ConstraintDescription" : "must select a valid Cache Node type."
+        },
+
+        "NumberOfCacheNodes" : {
+          "Default": "1",
+          "Description" : "The number of Cache Nodes the Cache Cluster should have",
+          "Type": "Number",
+          "MinValue": "1",
+          "MaxValue": "10",
+          "ConstraintDescription" : "must be between 1 and 10."
+        }
+    },
+
+    "Resources": {
+      "CacheCluster" : {
+        "Type": "AWS::ElastiCache::CacheCluster",
+        "Properties": {
+          "CacheNodeType"           : { "Ref" : "CacheNodeType" },
+          "CacheSecurityGroupNames" : [ { "Ref" : "CacheSecurityGroup" } ],
+          "Engine"                  : "memcached",
+          "NumCacheNodes"           : { "Ref" : "NumberOfCacheNodes" }
+        }
+      },
+
+      "CacheSecurityGroup": {
+        "Type": "AWS::ElastiCache::SecurityGroup",
+        "Properties": {
+          "Description"  : "Lock cache down to Web Server access only"
+        }
+      },
+
+      "CacheSecurityGroupIngress": {
+        "Type": "AWS::ElastiCache::SecurityGroupIngress",
+        "Properties": {
+          "CacheSecurityGroupName"  : { "Ref" : "CacheSecurityGroup" },
+          "EC2SecurityGroupName"    : { "Ref" : "WebSecurityGroup" }
+        }
+      },
+
+     "WebIPAddress" : {
+        "Type" : "AWS::EC2::EIP",
+        "Properties" : {
+          "InstanceId" : { "Ref" : "WebInstance" }
+        }
+      },
+
+      "WebInstance": {
+          "Type": "AWS::EC2::Instance",
+          "Metadata": {
+              "AWS::CloudFormation::Init": {
+                  "config": {
+                      "files": {
+                          "/etc/profile.d/lastmeme.sh": {
+                              "content": {
+                                  "Fn::Join": ["", [
+                                      "export MEMCACHE_SERVERS=", { "Fn::GetAtt" : [ "CacheCluster", "ConfigurationEndpoint.Address" ]}, "\n"
+                                  ]]
+                              },
+                              "mode": "000755",
+                              "owner": "root",
+                              "group": "root"
+                          }
+                      }
+                  }
+              }
+          },
+
+          "Properties": {
+              "KeyName": {
+                  "Ref": "KeyName"
+              },
+              "ImageId": {
+                "Ref": "WebImageId"
+              },
+              "InstanceType": {
+                  "Ref": "InstanceType"
+              },
+              "SecurityGroupIds": [
+                  {
+                      "Ref": "WebSecurityGroup"
+                  }
+              ],
+              "Tags": [
+                  {
+                      "Key": "Name",
+                      "Value": "lastmeme-web"
+                  }
+              ],
+              "UserData": {
+                  "Fn::Base64": {
+                      "Fn::Join": ["", [
+                          "#!/bin/bash -v\n",
+
+                          "# Install dependencies\n",
+                          "cfn-init -v -s ", { "Ref" : "AWS::StackName" }, " -r WebInstance --region ", {"Ref" : "AWS::Region"}, "\n",
+
+
+                          "# Set the timezone\n",
+                          "ln -sf /usr/share/zoneinfo/Australia/Melbourne /etc/localtime\n", "echo ZONE=\"Australia\\Melbourne\" > /etc/sysconfig/clock\n",
+
+                          "chown root:www /opt\n",
+                          "chmod g+w /opt\n"
+                      ]]
+                  }
+              }
+          }
+      },
+
+
+      "WebSecurityGroup": {
+          "Type": "AWS::EC2::SecurityGroup",
+          "Properties": {
+              "GroupDescription": "Enable ssh and http access",
+              "SecurityGroupIngress": [
+                  {
+                      "IpProtocol": "tcp",
+                      "FromPort": "22",
+                      "ToPort": "22",
+                      "CidrIp": "0.0.0.0/0"
+                  },
+                  {
+                      "IpProtocol": "tcp",
+                      "FromPort": "80",
+                      "ToPort": "80",
+                      "CidrIp": "0.0.0.0/0"
+                  }
+              ]
+          }
+      },
+
+
+      "MetricsServer": {
+          "Type": "AWS::EC2::Instance",
+          "Metadata": {
+              "AWS::CloudFormation::Init": {
+                  "config": {
+                      "packages": {
+                          "yum": {
+                              "gcc-c++": [],
+                              "make": [],
+                              "libcurl-devel.x86_64": [],
+                              "openssl-devel": [],
+                              "git.x86_64": []
+                          }
+                      },
+                      "files": {
+                          "/usr/sbin/update-route53-dns": {
+                              "source": "https://s3.amazonaws.com/dupondius_config/update-route53-dns",
+                              "mode": "000744",
+                              "owner": "root",
+                              "group": "root"
+                          },
+                          "/etc/default/app": {
+                              "content": {
+                                  "Fn::Join": ["", [
+                                      "ZONE=lastmeme.com\n",
+                                      "TTL=600\n",
+                                      "AWS_ACCESS_KEY_ID=", { "Ref": "AwsAccessKey" }, "\n",
+                                      "AWS_SECRET_ACCESS_KEY=", { "Ref": "AwsSecretAccessKey" }, "\n"
+                                  ]]
+                              },
+                              "mode": "000644",
+                              "owner": "root",
+                              "group": "root"
+                          },
+                          "/etc/statsd.js": {
+                              "content": {
+                                  "Fn::Join": ["", [
+                                      "{\n", "port: 8125,\n", "backends: [\"statsd-librato-backend\"],\n", "librato: {\n", "email: \"", {
+                                          "Ref": "LibratoEmail"
+                                      }, "\",\n", "token: \"", {
+                                          "Ref": "LibratoToken"
+                                      }, "\"\n", "}\n", "}\n"
+                                  ]]
+                              },
+                              "mode": "000644",
+                              "owner": "root",
+                              "group": "root"
+                          },
+                          "/etc/init/statsd.conf": {
+                              "content": {
+                                  "Fn::Join": ["", [
+                                      "start on runlevel [2345]\n", "stop on runlevel [016]\n", "respawn\n", "exec /usr/local/bin/node /opt/statsd/stats.js /etc/statsd.js\n"
+                                  ]]
+                              },
+                              "mode": "000644",
+                              "owner": "root",
+                              "group": "root"
+                          }
+                      }
+                  }
+              }
+          },
+
+          "Properties": {
+              "KeyName": {
+                  "Ref": "KeyName"
+              },
+              "ImageId": {
+                "Ref": "StatsdImageId"
+              },
+              "InstanceType": {
+                  "Ref": "InstanceType"
+              },
+              "SecurityGroupIds": [
+                  {
+                      "Ref": "MetricsServerGroup"
+                  }
+              ],
+              "Tags": [
+                  {
+                      "Key": "Name",
+                      "Value": "lastmeme-statsd"
+                  }
+              ],
+              "UserData": {
+                  "Fn::Base64": {
+                      "Fn::Join": ["", [
+                          "#!/bin/bash -v\n", "yum update -y aws-cfn-bootstrap\n",
+
+                          "# Helper function\n", "function error_exit\n", "{\n", "  /opt/aws/bin/cfn-signal -e 1 -r \"$1\" '", {
+                              "Ref": "WaitHandle"
+                          }, "'\n", "  exit 1\n", "}\n",
+
+                          "# Install packages\n", "/opt/aws/bin/cfn-init -v -s ", {
+                              "Ref": "AWS::StackName"
+                          }, " -r MetricsServer ", "    --access-key ", {
+                              "Ref": "AwsAccessKey"
+                          }, "    --secret-key ", {
+                              "Ref": "AwsSecretAccessKey"
+                          }, "    --region ", {
+                              "Ref": "AWS::Region"
+                          }, " || error_exit 'Failed to run cfn-init'\n",
+
+                          "# Set the timezone\n", "ln -sf /usr/share/zoneinfo/Australia/Melbourne /etc/localtime\n", "echo ZONE=\"Australia\\Melbourne\" > /etc/sysconfig/clock\n",
+
+                          "# Tools to support automated DNS update using Route53\n",
+                          "easy_install  -U pip\n",
+                          "pip install cli53\n",
+                          "echo \"/usr/sbin/update-route53-dns\" >> /etc/rc.local\n",
+
+                          "# Install node\n", "cd /usr/local/src\n", "curl -O http://nodejs.org/dist/v0.8.18/node-v0.8.18.tar.gz\n", "tar zxvf node-v0.8.18.tar.gz\n", "cd node-v0.8.18\n", "./configure\n", "make\n", "make install\n",
+
+                          "# Install NPM\n", "cd /tmp\n", "curl http://npmjs.org/install.sh | sh\n", "/usr/local/bin/npm install express\n",
+
+                          "#install statsd\n", "cd /opt\n", "git clone https://github.com/etsy/statsd.git\n",
+
+                          "# install the librato backend\n", "cd /opt/statsd\n", "/usr/local/bin/npm install statsd-librato-backend\n",
+
+                          "# Start statsd\n", "start statsd\n",
+
+                          "# All is well so signal success\n", "/opt/aws/bin/cfn-signal -e 0 -r \"application setup complete\" '", {
+                              "Ref": "WaitHandle"
+                          }, "'\n"
+                      ]]
+                  }
+              }
+          }
+      },
+
+      "WaitHandle": {
+          "Type": "AWS::CloudFormation::WaitConditionHandle"
+      },
+
+      "WaitForMetrics": {
+          "Type": "AWS::CloudFormation::WaitCondition",
+          "DependsOn": "MetricsServer",
+          "Properties": {
+              "Handle": {
+                  "Ref": "WaitHandle"
+              },
+              "Timeout": "2500"
+          }
+      },
+
+      "MetricsServerGroup": {
+          "Type": "AWS::EC2::SecurityGroup",
+          "Properties": {
+              "GroupDescription": "Enable ssh and udp access",
+              "SecurityGroupIngress": [
+                  {
+                      "IpProtocol": "tcp",
+                      "FromPort": "22",
+                      "ToPort": "22",
+                      "CidrIp": "0.0.0.0/0"
+                  },
+                  {
+                      "IpProtocol": "udp",
+                      "FromPort": "8125",
+                      "ToPort": "8125",
+                      "SourceSecurityGroupName" : { "Ref" : "WebSecurityGroup" }
+                  }
+              ]
+          }
+      },
+
+      "WebDNSRecord" : {
+        "Type" : "AWS::Route53::RecordSet",
+        "Properties" : {
+          "HostedZoneName" : "lastmeme.com.",
+          "Comment" : "A for the web instance.",
+          "Name" : "lastmeme.com",
+          "Type" : "A",
+          "TTL" : "600",
+          "ResourceRecords" : [{ "Ref" : "WebIPAddress"} ]
+        }
+      },
+
+      "DNSRecord" : {
+        "Type" : "AWS::Route53::RecordSet",
+        "Properties" : {
+          "HostedZoneName" : "lastmeme.com.",
+          "Comment" : "A for the web instance.",
+          "Name" : "statsd.lastmeme.com",
+          "Type" : "A",
+          "TTL" : "600",
+          "ResourceRecords" : [{ "Fn::GetAtt" : [ "MetricsServer", "PrivateIp" ]}]
+        }
+      }
+
+    },
+
+    "Outputs": {
+    }
+}
+
