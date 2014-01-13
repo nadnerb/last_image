@@ -28,16 +28,6 @@
             "Type": "String"
         },
 
-        "AwsAccessKey": {
-            "Description": "Your AWS access key",
-            "Type": "String"
-        },
-
-        "AwsSecretAccessKey": {
-            "Description": "Your AWS secret access key",
-            "Type": "String"
-        },
-
         "LibratoEmail": {
             "Default": "sbartlett@dius.com.au",
             "Description": "Librato email for API access",
@@ -184,6 +174,32 @@
           }
       },
 
+      "CfnUser" : {
+        "Type" : "AWS::IAM::User",
+        "Properties" : {
+          "Path": "/",
+          "Policies": [
+            {
+            "PolicyName": "Admin",
+            "PolicyDocument":
+              { "Statement": [
+              {
+              "Effect":"Allow",
+              "Action":"*",
+              "Resource":"*"
+            }
+            ]}
+          }
+          ]
+        }
+      },
+
+      "HostKeys" : {
+        "Type" : "AWS::IAM::AccessKey",
+        "Properties" : {
+          "UserName" : {"Ref": "CfnUser"}
+        }
+      },
 
       "MetricsServer": {
           "Type": "AWS::EC2::Instance",
@@ -211,8 +227,8 @@
                                   "Fn::Join": ["", [
                                       "ZONE=lastmeme.com\n",
                                       "TTL=600\n",
-                                      "AWS_ACCESS_KEY_ID=", { "Ref": "AwsAccessKey" }, "\n",
-                                      "AWS_SECRET_ACCESS_KEY=", { "Ref": "AwsSecretAccessKey" }, "\n"
+                                      "AWS_ACCESS_KEY_ID=", { "Ref": "HostKeys" }, "\n",
+                                      "AWS_SECRET_ACCESS_KEY=", { "Fn::GetAtt": ["HostKeys", "SecretAccessKey"]}, "\n"
                                   ]]
                               },
                               "mode": "000644",
@@ -278,34 +294,44 @@
                               "Ref": "WaitHandle"
                           }, "'\n", "  exit 1\n", "}\n",
 
-                          "# Install packages\n", "/opt/aws/bin/cfn-init -v -s ", {
-                              "Ref": "AWS::StackName"
-                          }, " -r MetricsServer ", "    --access-key ", {
-                              "Ref": "AwsAccessKey"
-                          }, "    --secret-key ", {
-                              "Ref": "AwsSecretAccessKey"
-                          }, "    --region ", {
-                              "Ref": "AWS::Region"
-                          }, " || error_exit 'Failed to run cfn-init'\n",
+                          "/opt/aws/bin/cfn-init -v -s ", { "Ref" : "AWS::StackName" }, " -r MetricsServer --region ", {"Ref" : "AWS::Region"}, " || error_exit 'Failed to run cfn-init'\n",
 
-                          "# Set the timezone\n", "ln -sf /usr/share/zoneinfo/Australia/Melbourne /etc/localtime\n", "echo ZONE=\"Australia\\Melbourne\" > /etc/sysconfig/clock\n",
+                          "# Set the timezone\n",
+                          "ln -sf /usr/share/zoneinfo/Australia/Melbourne /etc/localtime\n",
+                          "echo ZONE=\"Australia\\Melbourne\" > /etc/sysconfig/clock\n",
 
                           "# Tools to support automated DNS update using Route53\n",
                           "easy_install  -U pip\n",
                           "pip install cli53\n",
                           "echo \"/usr/sbin/update-route53-dns\" >> /etc/rc.local\n",
 
-                          "# Install node\n", "cd /usr/local/src\n", "curl -O http://nodejs.org/dist/v0.8.18/node-v0.8.18.tar.gz\n", "tar zxvf node-v0.8.18.tar.gz\n", "cd node-v0.8.18\n", "./configure\n", "make\n", "make install\n",
+                          "# Install node\n",
+                          "cd /usr/local/src\n",
+                          "curl -O http://nodejs.org/dist/v0.8.18/node-v0.8.18.tar.gz\n",
+                          "tar zxvf node-v0.8.18.tar.gz\n",
+                          "cd node-v0.8.18\n",
+                          "./configure\n",
+                          "make\n",
+                          "make install\n",
 
-                          "# Install NPM\n", "cd /tmp\n", "curl http://npmjs.org/install.sh | sh\n", "/usr/local/bin/npm install express\n",
+                          "# Install NPM\n",
+                          "cd /tmp\n",
+                          "curl http://npmjs.org/install.sh | sh\n",
+                          "/usr/local/bin/npm install express\n",
 
-                          "#install statsd\n", "cd /opt\n", "git clone https://github.com/etsy/statsd.git\n",
+                          "#install statsd\n",
+                          "cd /opt\n",
+                          "git clone https://github.com/etsy/statsd.git\n",
 
-                          "# install the librato backend\n", "cd /opt/statsd\n", "/usr/local/bin/npm install statsd-librato-backend\n",
+                          "# install the librato backend\n",
+                          "cd /opt/statsd\n",
+                          "/usr/local/bin/npm install statsd-librato-backend\n",
 
-                          "# Start statsd\n", "start statsd\n",
+                          "# Start statsd\n",
+                          "start statsd\n",
 
-                          "# All is well so signal success\n", "/opt/aws/bin/cfn-signal -e 0 -r \"application setup complete\" '", {
+                          "# All is well so signal success\n",
+                          "/opt/aws/bin/cfn-signal -e 0 -r \"application setup complete\" '", {
                               "Ref": "WaitHandle"
                           }, "'\n"
                       ]]
